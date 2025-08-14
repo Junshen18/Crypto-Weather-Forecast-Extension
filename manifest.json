@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Crypto Weather Forecast",
+  "version": "1.0",
+  "description": "Get weather-style forecasts for cryptocurrency market conditions",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://mcp.pro-api.coingecko.com/*",
+    "https://api.coingecko.com/*",
+    "https://pro-api.coingecko.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Crypto Weather",
+    "default_icon": {
+      "16": "public/Crypto-Weather.png",
+      "32": "public/Crypto-Weather.png",
+      "48": "public/Crypto-Weather.png",
+      "128": "public/Crypto-Weather.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "icons": {
+    "16": "public/Crypto-Weather.png",
+    "32": "public/Crypto-Weather.png",
+    "48": "public/Crypto-Weather.png",
+    "128": "public/Crypto-Weather.png"
+  }
+}
