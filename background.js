@@ -166,7 +166,7 @@ class CryptoWeatherBackground {
         chrome.action.setBadgeBackgroundColor({ color: color });
         
         // Update tooltip
-        chrome.action.setTitle({ title: `Crypto Weather: ${condition}` });
+        chrome.action.setTitle({ title: `Froggy Crypto Weather: ${condition}` });
         
         // Note: In a real extension, you'd have different icon files for different weather conditions
         // For this demo, we're using the default icon

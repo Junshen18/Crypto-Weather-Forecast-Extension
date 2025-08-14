@@ -1,4 +1,4 @@
-# 🌤️ Crypto Weather Forecast Extension
+# 🌤️ Froggy Crypto Weather Forecast Extension
 
 A Chrome extension that presents cryptocurrency market conditions as intuitive weather forecasts. Get real-time "weather reports" for crypto markets with storms representing high volatility, sunny skies for stable bull markets, and everything in between.
 
