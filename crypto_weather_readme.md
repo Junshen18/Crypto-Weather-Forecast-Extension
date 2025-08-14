@@ -2,63 +2,89 @@
 
 A Chrome extension that presents cryptocurrency market conditions as intuitive weather forecasts. Get real-time "weather reports" for crypto markets with storms representing high volatility, sunny skies for stable bull markets, and everything in between.
 
+## ✨ What’s new
+
+- Moved all images to `public/` and switched UI to use image icons with emoji fallback
+- Added header logo (`public/logo.png`) displayed on the popup home page
+- Updated extension/action icons to `public/Crypto-Weather.png`
+- Centered and highlighted the current weather card with a lighter gradient background
+
 ## 🎯 Features
 
-### Weather-Style Market Analysis
-- **Current Conditions**: See market state as weather (☀️ Sunny, ⛈️ Stormy, 🌫️ Foggy, etc.)
-- **5-Day Forecast**: Predicted market conditions based on trend analysis
-- **Market Temperature**: Volatility levels presented as temperature readings
-- **Weather Alerts**: Storm warnings for high volatility periods
+- **Current Conditions** rendered as weather: ☀️ Sunny, 🌤️ Mostly Sunny, ⛅ Partly Cloudy, ☁️ Overcast, 🌦️ Showers, ⛈️ Storm, 🌫️ Foggy, 🌪️ Crypto Hurricane
+- **5‑Day Forecast**
+- **Market Temperature** (volatility), **Sentiment Winds**, **Fear & Greed**, **Trends**
+- **Weather Alerts** for extreme conditions
 
-### Real-Time Data
-- Live data from CoinGecko API
-- Monitors 8 major cryptocurrencies
-- Updates every 15 minutes automatically
-- Manual refresh option available
+## 🚀 Install (Load Unpacked)
 
-### Smart Indicators
-- **Sentiment Winds**: Bullish/bearish market direction
-- **Fear & Greed Index**: Market psychology indicator  
-- **Volume Analysis**: Market activity levels
-- **Trend Analysis**: Multi-timeframe market direction
+1. Open `chrome://extensions/` and enable Developer mode
+2. Click “Load unpacked” → select the project folder
+3. Pin the extension and click the toolbar icon to open the popup
 
-## 🚀 Installation
+## 🔧 Configure
 
-### Method 1: Load as Unpacked Extension (Developer Mode)
+- Click Settings in the popup to set your CoinGecko API tier/key and tracked coins
+- Theme toggle available in the header
 
-1. **Download the extension files:**
-   - Save all the provided files in a single folder
-   - Create icon files (or use placeholder 16x16, 32x32, 48x48, 128x128 PNG images)
+## 🖼️ Assets (public/)
 
-2. **Enable Developer Mode:**
-   - Open Chrome and go to `chrome://extensions/`
-   - Toggle "Developer Mode" ON (top-right corner)
-
-3. **Load the extension:**
-   - Click "Load unpacked" button
-   - Select the folder containing your extension files
-   - The extension should now appear in your extensions list
-
-4. **Pin the extension:**
-   - Click the puzzle piece icon in Chrome toolbar
-   - Find "Crypto Weather Forecast" and click the pin icon
-   - The weather icon should now appear in your toolbar
-
-### Method 2: Create Icons (Required)
-
-Since the extension references icon files, you'll need to create them:
+The extension loads images from `public/` via `chrome.runtime.getURL()`.
 
 ```
-icons/
-├── sunny-16.png   (16x16 pixels)
-├── sunny-32.png   (32x32 pixels)  
-├── sunny-48.png   (48x48 pixels)
-└── sunny-128.png  (128x128 pixels)
+public/
+├── Crypto-Weather.png          # used for action/icons (all sizes)
+├── logo.png                    # shown at top of popup
+├── icon-sunny.png
+├── icon-mostly-sunny.png
+├── icon-partly-cloudy.png
+├── icon-cloudy.png
+├── icon-showers.png
+├── icon-storm.png
+├── icon-fog.png
+└── icon-hurricane.png
 ```
 
-You can use any image editor or online icon generators to create these simple sunny weather icons.
+The UI prefers these images and falls back to emoji when unavailable.
 
-## 📁 File Structure
+## 📄 Manifest highlights
+
+- `icons` and `action.default_icon` reference `public/Crypto-Weather.png`
+- Background service worker: `background.js`
+- Popup: `popup.html` / `popup.js`
+- Options page: `options.html` / `options.js`
+
+## 🔁 Live dev workflow
+
+- Popup/UI edits (`popup.html`, `popup.js`, files in `public/`): reopen the popup, or right‑click popup → Inspect → Cmd+R
+- Background edits (`background.js`): on `chrome://extensions/` click the “service worker” link then Cmd+R
+- Manifest/icon changes: click “Update” on `chrome://extensions` or toggle the extension off/on
+
+## 📁 Project structure
 
 ```
-crypto
+Crypto Weather Forecast Extension/
+├── background.js
+├── manifest.json
+├── options.html
+├── options.js
+├── popup.html
+├── popup.js
+├── crypto_weather_readme.md
+└── public/
+    ├── Crypto-Weather.png
+    ├── logo.png
+    ├── icon-sunny.png
+    ├── icon-mostly-sunny.png
+    ├── icon-partly-cloudy.png
+    ├── icon-cloudy.png
+    ├── icon-showers.png
+    ├── icon-storm.png
+    ├── icon-fog.png
+    └── icon-hurricane.png
+```
+
+## 🧭 Troubleshooting
+
+- If an image doesn’t show, ensure the file exists under `public/` and paths are not relative but set with `chrome.runtime.getURL('public/...')`.
+- After changing `manifest.json` or icons, click “Update” on `chrome://extensions/`.
