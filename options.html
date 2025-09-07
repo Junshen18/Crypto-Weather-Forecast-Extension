@@ -33,6 +33,10 @@
         <input id="apiKey" type="password" placeholder="Enter your Demo or Pro API key" />
         <div class="hint">Your key is stored locally in the browser via <code>chrome.storage</code>. For production apps, use a server-side proxy instead of embedding keys in extensions.</div>
 
+        <label for="geminiKey">Gemini API Key</label>
+        <input id="geminiKey" type="password" placeholder="Paste your Google AI Studio key (starts with AI...)" />
+        <div class="hint">Used to generate AI-based market "weather" forecasts via Gemini. Stored locally in <code>chrome.storage</code>.</div>
+
         <label for="coins">Tracked Coins (comma-separated IDs)</label>
         <input id="coins" type="text" placeholder="bitcoin,ethereum,binancecoin,solana,chainlink" />
 

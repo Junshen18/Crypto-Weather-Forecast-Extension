@@ -1,13 +1,15 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const tierEl = document.getElementById('tier');
     const keyEl = document.getElementById('apiKey');
+    const geminiEl = document.getElementById('geminiKey');
     const coinsEl = document.getElementById('coins');
     const okEl = document.getElementById('savedOk');
 
     // Load saved
-    chrome.storage.local.get(['cg_api_tier', 'cg_api_key', 'tracked_coins'], (res) => {
+    chrome.storage.local.get(['cg_api_tier', 'cg_api_key', 'gemini_api_key', 'tracked_coins'], (res) => {
         tierEl.value = res.cg_api_tier || 'demo';
         keyEl.value = res.cg_api_key || '';
+        geminiEl.value = res.gemini_api_key || '';
         coinsEl.value = (res.tracked_coins && Array.isArray(res.tracked_coins))
             ? res.tracked_coins.join(',')
             : 'bitcoin,ethereum,binancecoin,cardano,solana,polkadot,avalanche-2,chainlink';
@@ -16,11 +18,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('saveBtn').addEventListener('click', async () => {
         const tier = tierEl.value;
         const key = keyEl.value.trim();
+        const geminiKey = geminiEl.value.trim();
         const coins = coinsEl.value.split(',').map(s => s.trim()).filter(Boolean);
 
         await chrome.storage.local.set({
             cg_api_tier: tier,
             cg_api_key: key,
+            gemini_api_key: geminiKey,
             tracked_coins: coins
         });
 
@@ -29,9 +33,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('clearBtn').addEventListener('click', async () => {
-        await chrome.storage.local.remove(['cg_api_tier', 'cg_api_key', 'tracked_coins']);
+        await chrome.storage.local.remove(['cg_api_tier', 'cg_api_key', 'gemini_api_key', 'tracked_coins']);
         tierEl.value = 'demo';
         keyEl.value = '';
+        geminiEl.value = '';
         coinsEl.value = 'bitcoin,ethereum,binancecoin,cardano,solana,polkadot,avalanche-2,chainlink';
     });
 });

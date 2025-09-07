@@ -69,6 +69,9 @@ class CryptoWeatherApp {
             this.updateAlerts();
             this.updateTrending();
             
+            // Kick off Gemini forecast (non-blocking)
+            this.loadGeminiForecast();
+            
             loadingIndicator.style.display = 'none';
             mainContent.style.display = 'block';
             
@@ -539,6 +542,108 @@ class CryptoWeatherApp {
                 <small>Check your internet connection</small>
             </div>
         `;
+    }
+
+    // ===== Gemini Integration =====
+    async loadGeminiForecast() {
+        const container = document.getElementById('geminiForecastText');
+        if (!container || !this.weatherData) return;
+        container.innerHTML = `<span class="spinner" style="width:18px;height:18px;border-width:2px;border-top-color:#fff;margin:0 8px 0 0;display:inline-block;vertical-align:middle;"></span>Generating AI forecast...`;
+
+        try {
+            const geminiKey = await new Promise((resolve) => {
+                chrome.storage.local.get(['gemini_api_key'], (res) => resolve(res.gemini_api_key || ''));
+            });
+            if (!geminiKey) {
+                container.textContent = 'Enable by adding a Gemini API key in Settings.';
+                return;
+            }
+
+            const prompt = this.buildGeminiPrompt(this.weatherData);
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(geminiKey)}`;
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [
+                        { role: 'user', parts: [{ text: prompt }] }
+                    ]
+                })
+            });
+            if (!resp.ok) throw new Error(`Gemini HTTP ${resp.status}`);
+            const data = await resp.json();
+            const text = (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || '';
+
+            // Try to parse structured forecast and override UI
+            const parsed = this.parseGeminiForecastText(text || '');
+            if (parsed && Array.isArray(parsed.days) && parsed.days.length === 5) {
+                const normalized = parsed.days.map((d, idx) => this.normalizeForecastEntry(d, idx));
+                this.weatherData.forecast = normalized;
+                this.updateForecast();
+                container.textContent = 'AI forecast applied to 5-day outlook.';
+                return;
+            }
+
+            // Fallback to showing raw text in the Gemini section
+            if (text) {
+                container.textContent = text.trim();
+            } else {
+                container.textContent = 'No AI forecast returned.';
+            }
+        } catch (e) {
+            console.warn('Gemini forecast failed:', e);
+            const msg = (e && e.message) ? e.message : 'Unknown error';
+            container.innerHTML = `<span class="danger">Gemini error:</span> ${msg}`;
+        }
+    }
+
+    buildGeminiPrompt(weather) {
+        const trendingNames = (weather.trending || []).slice(0, 5).map(t => (t.item && t.item.name) ? t.item.name : '').filter(Boolean);
+        const allowed = ['Sunny','Partly Sunny','Cloudy','Showers','Stormy','Foggy'];
+        const lines = [
+            `You are a crypto meteorologist. Using the metrics below, produce a STRICT JSON object only.`,
+            `JSON schema: { "days": [ { "day": "Today|Tomorrow|<Weekday>", "desc": "${allowed.join('|')}", "reason": "short plain text" } x5 ] }`,
+            `Rules: output ONLY JSON (no markdown/code fences). Use one of the allowed desc values exactly.`,
+            `Metrics: volatility=${Math.round(weather.volatility)}%, sentiment=${Math.round(weather.sentiment)}%, fearGreed=${Math.round(weather.fearGreedIndex)}/100, trends: bullish=${weather.trends.bullish}, bearish=${weather.trends.bearish}, mixed=${weather.trends.mixed}.`,
+            trendingNames.length ? `Trending: ${trendingNames.join(', ')}.` : ''
+        ];
+        return lines.filter(Boolean).join(' ');
+    }
+
+    parseGeminiForecastText(text) {
+        try {
+            // Direct JSON
+            return JSON.parse(text);
+        } catch (_) {}
+        try {
+            // Extract from code fence if present
+            const m = text.match(/```(?:json)?\n([\s\S]*?)```/i);
+            if (m && m[1]) return JSON.parse(m[1]);
+        } catch (_) {}
+        try {
+            // Heuristic: find first { and last } and parse substring
+            const start = text.indexOf('{');
+            const end = text.lastIndexOf('}');
+            if (start !== -1 && end !== -1 && end > start) {
+                const sub = text.slice(start, end + 1);
+                return JSON.parse(sub);
+            }
+        } catch (_) {}
+        return null;
+    }
+
+    normalizeForecastEntry(entry, index) {
+        const defaultLabels = ['Today', 'Tomorrow', 'Wed', 'Thu', 'Fri'];
+        const day = (typeof entry.day === 'string' && entry.day.trim()) ? entry.day.trim() : defaultLabels[index] || `Day ${index+1}`;
+        const raw = (entry.desc || '').toLowerCase();
+        let desc = 'Cloudy';
+        if (/sun|clear/.test(raw)) desc = 'Sunny';
+        else if (/partly|mostly|interval|breaks/.test(raw)) desc = 'Partly Sunny';
+        else if (/storm|thunder/.test(raw)) desc = 'Stormy';
+        else if (/shower|rain/.test(raw)) desc = 'Showers';
+        else if (/fog|haze|mist/.test(raw)) desc = 'Foggy';
+        else if (/cloud/.test(raw)) desc = 'Cloudy';
+        return { day, desc };
     }
 }
 
